@@ -1,6 +1,9 @@
+const ClientError = require("../../exceptions/ClientError");
+
 class NotesHandler {
-  constructor(service) {
+  constructor(service, validator) {
     this._service = service;
+    this._validator = validator;
     this.postNoteHandler = this.postNoteHandler.bind(this);
     this.getNotesHandler = this.getNotesHandler.bind(this);
     this.getNoteByIdHandler = this.getNoteByIdHandler.bind(this);
@@ -10,6 +13,7 @@ class NotesHandler {
 
   postNoteHandler(request, h) {
     try {
+      this._validator.validateNotePayload(request.payload);
       const { title, tags, body } = request.payload;
       const noteId = this._service.addNote({ title, tags, body });
 
@@ -23,11 +27,20 @@ class NotesHandler {
       response.code(201);
       return response;
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
-        status: "fail",
-        message: error.message,
+        status: "error",
+        message: "Maaf, terjadi kegagalan pada server kami.",
       });
-      response.code(400);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
@@ -42,6 +55,8 @@ class NotesHandler {
   }
   getNoteByIdHandler(request, h) {
     try {
+      this._validator.validateNotePayload(request.payload);
+
       const { id } = request.params;
       const note = this._service.getNoteById(id);
       return {
@@ -51,16 +66,27 @@ class NotesHandler {
         },
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
-        status: "fail",
-        message: error.message,
+        status: "error",
+        message: "Maaf, terjadi kegagalan pada server kami.",
       });
-      response.code(404);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
   putNoteByIdHandler(request, h) {
     try {
+      this._validator.validateNotePayload(request.payload);
+
       const { id } = request.params;
       this._service.editNoteById(id, request.payload);
       return {
@@ -68,16 +94,27 @@ class NotesHandler {
         message: "Catatan berhasil diperbarui",
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
-        status: "fail",
-        message: error.message,
+        status: "error",
+        message: "Maaf, terjadi kegagalan pada server kami.",
       });
-      response.code(404);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
   deleteNoteByIdHandler(request, h) {
     try {
+      this._validator.validateNotePayload(request.payload);
+
       const { id } = request.params;
       this._service.deleteNoteById(id);
       return {
@@ -85,11 +122,20 @@ class NotesHandler {
         message: "Catatan berhasil dihapus",
       };
     } catch (error) {
+      if (error instanceof ClientError) {
+        const response = h.response({
+          status: "fail",
+          message: error.message,
+        });
+        response.code(error.statusCode);
+        return response;
+      }
       const response = h.response({
-        status: "fail",
-        message: error.message,
+        status: "error",
+        message: "Maaf, terjadi kegagalan pada server kami.",
       });
-      response.code(404);
+      response.code(500);
+      console.error(error);
       return response;
     }
   }
