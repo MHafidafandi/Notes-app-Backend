@@ -1,6 +1,5 @@
 const { nanoid } = require("nanoid");
 const InvariantError = require("../../exceptions/InvariantError");
-const ClientError = require("../../exceptions/ClientError");
 const NotFoundError = require("../../exceptions/NotFoundError");
 class NoteServices {
   constructor() {
